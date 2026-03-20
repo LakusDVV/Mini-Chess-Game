@@ -47,4 +47,5 @@ class ClickResult(Enum):
 
 
 class Errors(Enum):
+    Nothing = auto()
     Promotion_pawn_dont_select = auto()

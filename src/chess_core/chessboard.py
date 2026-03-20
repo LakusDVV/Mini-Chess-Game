@@ -305,5 +305,3 @@ class ChessBoard:
                 text += f" {x} "
             text += "\n"
         return text
-
-

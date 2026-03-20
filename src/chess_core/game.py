@@ -32,18 +32,18 @@ class Game:
         print(self.chessboard.castling_rights)
 
 
-
-
-
-
-
-
-    def update(self, x:int=0, y:int=0, command = 0):
+    def update(self, board_x:int=0, board_y:int=0, command = 0):
+        data = {
+            "game_staus": GameStatus.IN_PROGRESS,
+            "data": {},
+            "Errors": Errors.Nothing
+        }
 
         if self.promotion:
 
             if self.promotion_figure is None:
-                return Errors.Promotion_pawn_dont_select
+                data["Errors"] = Errors.Promotion_pawn_dont_select
+                return data
 
             sel_fig = self.promotion_figure
 
@@ -54,27 +54,19 @@ class Game:
                 self.chessboard.apply_move(prom_rec)
                 self.after_move()
 
-                return GameStatus.IN_PROGRESS
-
-        text = input("x, y: ")
-
-
-        if text.lower() == "stop":
-            return GameStatus.EXIT
-
-        str_x, str_y = text.split(" ")
+                return data
 
         try:
-            int_x, int_y = int(str_x), int(str_y)
-
-            status = self.selected_cell(board_x=int_x, board_y=int_y)
+            status = self.selected_cell(board_x=board_x, board_y=board_y)
 
             match status["num_of_select"]:
                 case 0:
+                    data["data"] = status
                     first_s_d = status["first_select_data"]
                     print(f"{first_s_d["selected_piece"]},\n {first_s_d["status"]},\n moves: {first_s_d["moves"]}")
 
                 case 1:
+                    data["data"] = status
                     print(status["second_select_data"])
                     print(self.get_game_info())
                     print(self.chessboard)
@@ -88,7 +80,7 @@ class Game:
             print(self.chessboard)
 
 
-        return GameStatus.IN_PROGRESS
+        return data
 
 
 
@@ -135,8 +127,7 @@ class Game:
 
     def selected_cell(self, board_x, board_y):
         data = {
-            "status": GameStatus.IN_PROGRESS,
-            "num_of_select": 0,
+            "num_of_select": 0, # 0 - first move, 1 - Second move
             "first_select_data": {},
             "second_select_data": MoveResult.NOTHING
         }
@@ -407,7 +398,6 @@ class Game:
 
 
     # interfaces:
-
     def get_chessboard(self):
         return self.chessboard
 
@@ -495,8 +485,6 @@ def get_figures_info(*, color, fig_y, pawn_y, texture_manager):
             "texture": texture_manager.get_texture(f"{color}_pawn")
         }
     }
-
-
 
 
 def select_promotion_figure(cord, direction, board_x, board_y):

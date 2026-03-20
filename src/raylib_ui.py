@@ -49,4 +49,6 @@ class Game_UI:
             board_x = mouse_x // self.tile_size
             board_y = mouse_y // self.tile_size
 
-            status = self.chess_game.update(x=board_x, y=board_y)
+            game_data = self.chess_game.update(board_x=board_x, board_y=board_y)
+
+            print(game_data)

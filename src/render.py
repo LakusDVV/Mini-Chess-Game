@@ -381,9 +381,3 @@ class Render:
     def clear_last_move_data(self):
         self.last_move_data["has_data"] = False
     # last move block >
-
-
-
-
-
-
