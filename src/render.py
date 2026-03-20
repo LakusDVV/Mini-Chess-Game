@@ -212,7 +212,7 @@ class Render:
                 )
 
 
-    def change_highlighting_data(self, captures: list, moves: list):
+    def change_highlighting_data(self, *, captures: list, moves: list):
         if captures or moves:
             self.highlighting_data["has_data"] = True
             self.highlighting_data["captures"] = captures
@@ -373,7 +373,7 @@ class Render:
                 )
 
 
-    def change_last_move_data(self, from_pos: tuple[int, int], to_pos: tuple[int, int]):
+    def change_last_move_data(self, *, from_pos: tuple[int, int], to_pos: tuple[int, int]):
         self.last_move_data["data"] = [from_pos, to_pos]
         self.last_move_data["has_data"] = True
 
