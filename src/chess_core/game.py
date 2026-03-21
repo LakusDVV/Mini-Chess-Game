@@ -149,8 +149,8 @@ class Game:
                 data["select_number"] = 2
                 data["second_data"] = stat
 
-                if stat == MoveResult.OK:
-                    self.first_select = False
+
+                self.first_select = False
 
             case ClickResult.NOTHING:
                 pass
@@ -169,7 +169,8 @@ class Game:
 
 
         if piece and piece.color == self.selected_piece.color:
-            if self.selected_piece.cord == (x, y):
+
+            if self.selected_piece.cord == (x, y): # If it is second click on selected_piece then clear select
                 return ClickResult.SECOND_SELECT
             return ClickResult.CHANGE_SELECTION
 

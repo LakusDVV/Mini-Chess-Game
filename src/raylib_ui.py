@@ -62,6 +62,8 @@ class Game_UI:
                     self.update_highlighting_second_data(game_data["second_data"])
                     self.clear_render_data_first_click()
 
+            print(self.chess_game.get_game_info())
+
         
 
 
