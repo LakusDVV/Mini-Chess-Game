@@ -63,9 +63,9 @@ class Game:
             data["select_number"] = status["select_number"]
             data["first_data"] = status["first_data"]
             data["second_data"] = status["second_data"]
-            
 
-            self.after_move()
+            if data["select_number"] == 2:
+                self.after_move()
 
 
         except Exception as ex:
@@ -139,6 +139,9 @@ class Game:
                 data["first_data"] = self._first_select(piece=piece)
                 self.first_select = True
 
+            case ClickResult.SECOND_SELECT:
+                self.first_select = False
+
 
             case ClickResult.MOVE:
                 stat = self._second_select(piece=piece, board_x=board_x, board_y=board_y)
@@ -164,7 +167,10 @@ class Game:
                 return ClickResult.SELECT
             return ClickResult.NOTHING
 
+
         if piece and piece.color == self.selected_piece.color:
+            if self.selected_piece.cord == (x, y):
+                return ClickResult.SECOND_SELECT
             return ClickResult.CHANGE_SELECTION
 
         if self.find_move_to(x, y):

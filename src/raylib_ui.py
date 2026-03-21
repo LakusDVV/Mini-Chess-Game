@@ -49,7 +49,8 @@ class Game_UI:
         mouse_click: bool = rl.is_mouse_button_pressed(rl.MOUSE_LEFT_BUTTON)
 
         if mouse_click:
-            
+            self.clear_render_data_first_click()
+            self.clear_render_data_second_click()
 
             game_data = self.chess_game.update(board_x=board_x, board_y=board_y)
             
@@ -78,6 +79,10 @@ class Game_UI:
             self.render.change_highlighting_selected_cell_data(first_data["selected_piece"].cord)
             self.cheker = remember_available_moves(moves)
             self.cheker_on = True
+        else:
+            self.render.clear_highlighting_data()
+            self.render.clear_highlighting_selected_cell_data()
+            self.cheker_on = False
  
 
     def cheking_cell(self, x, y):
@@ -95,9 +100,8 @@ class Game_UI:
         self.cheker_on = False
 
 
-    def update_highlighting_second_data(self, second_data):        
-        if second_data:
-            self.render.change_last_move_data(from_pos=second_data["move_from"], to_pos=second_data["move_to"])
+    def update_highlighting_second_data(self, second_data):
+        self.render.change_last_move_data(from_pos=second_data["move_from"], to_pos=second_data["move_to"])
 
 
     def clear_render_data_second_click(self):

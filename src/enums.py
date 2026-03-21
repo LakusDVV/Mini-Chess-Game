@@ -42,6 +42,7 @@ class GameStatus(Enum):
 class ClickResult(Enum):
     NOTHING = auto()
     SELECT = auto()
+    SECOND_SELECT = auto()
     MOVE = auto()
     CHANGE_SELECTION = auto()
 
