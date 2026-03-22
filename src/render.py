@@ -228,14 +228,7 @@ class Render:
     # highlighting selected cell block <
     def draw_highlighting_selected_cell(self) -> None:
         if self.highlighting_the_selected_cell_data["has_data"]:
-            x, y = self.highlighting_the_selected_cell_data["data"]
-            rl.draw_rectangle(
-                pos_x=x * self.tile_size,
-                pos_y=y * self.tile_size,
-                width=self.tile_size,
-                height=self.tile_size,
-                color=self.highlighting_the_selected_cell_data["color"]
-            )
+            self.draw_rectangle(self.highlighting_the_selected_cell_data)
 
 
     def change_highlighting_selected_cell_data(self, cord:tuple[int, int]):
@@ -253,14 +246,7 @@ class Render:
     # highlighting selected cell block <
     def draw_highlighting_of_the_selected_cell(self) -> None:
         if self.highlighting_of_the_selected_cell_data["has_data"]:
-            x, y = self.highlighting_of_the_selected_cell_data["data"]
-            rl.draw_rectangle(
-                pos_x=x * self.tile_size,
-                pos_y=y * self.tile_size,
-                width=self.tile_size,
-                height=self.tile_size,
-                color=self.highlighting_of_the_selected_cell_data["color"]
-            )
+            self.draw_rectangle(self.highlighting_of_the_selected_cell_data)
 
 
     def change_highlighting_of_the_selected_cell_data(self, cord: tuple[int, int]):
@@ -277,14 +263,7 @@ class Render:
     # check king block <
     def draw_check_king(self) -> None:
         if self.check_data["has_data"]:
-            x, y = self.check_data["data"]
-            rl.draw_rectangle(
-                pos_x=x * self.tile_size,
-                pos_y=y * self.tile_size,
-                width=self.tile_size,
-                height=self.tile_size,
-                color=self.check_data["color"]
-            )
+            self.draw_rectangle(self.check_data)
 
 
     def change_check_data(self, new_pos: tuple[int, int]):
@@ -318,33 +297,42 @@ class Render:
             x, y = data["cord"]
             direct = data["direction"]
 
+            figures = [queen_t, knight_t, rook_t, bishop_t]
 
-            rl.draw_texture(
-                texture=queen_t,
-                pos_x=x * self.tile_size,
-                pos_y=y * self.tile_size,
-                tint=rl.WHITE
-            )
+            for index, item in enumerate(figures):
+                rl.draw_texture(
+                    texture=item,
+                    pos_x=x * self.tile_size,
+                    pos_y=(y - direct * index) * self.tile_size,
+                    tint=rl.WHITE
+                )
 
-            rl.draw_texture(
-                texture=knight_t,
-                pos_x=x * self.tile_size,
-                pos_y=(y - direct * 1) * self.tile_size,
-                tint=rl.WHITE
-            )
-
-            rl.draw_texture(
-                texture=rook_t,
-                pos_x=x * self.tile_size,
-                pos_y=(y - direct * 2) * self.tile_size,
-                tint=rl.WHITE
-            )
-            rl.draw_texture(
-                texture=bishop_t,
-                pos_x=x * self.tile_size,
-                pos_y=(y - direct * 3) * self.tile_size,
-                tint=rl.WHITE
-            )
+            # rl.draw_texture(
+            #     texture=queen_t,
+            #     pos_x=x * self.tile_size,
+            #     pos_y=y * self.tile_size,
+            #     tint=rl.WHITE
+            # )
+            #
+            # rl.draw_texture(
+            #     texture=knight_t,
+            #     pos_x=x * self.tile_size,
+            #     pos_y=(y - direct * 1) * self.tile_size,
+            #     tint=rl.WHITE
+            # )
+            #
+            # rl.draw_texture(
+            #     texture=rook_t,
+            #     pos_x=x * self.tile_size,
+            #     pos_y=(y - direct * 2) * self.tile_size,
+            #     tint=rl.WHITE
+            # )
+            # rl.draw_texture(
+            #     texture=bishop_t,
+            #     pos_x=x * self.tile_size,
+            #     pos_y=(y - direct * 3) * self.tile_size,
+            #     tint=rl.WHITE
+            # )
 
 
     def change_promotion_pawn_data(self, color: PieceColor, direction: int, cord: tuple[int, int]):
@@ -363,14 +351,7 @@ class Render:
     # last move block <
     def draw_last_move(self) -> None:
         if self.last_move_data["has_data"]:
-            for x, y in self.last_move_data["data"]:
-                rl.draw_rectangle(
-                    pos_x=x * self.tile_size,
-                    pos_y=y * self.tile_size,
-                    width=self.tile_size,
-                    height=self.tile_size,
-                    color=self.last_move_data["color"]
-                )
+            self.draw_rectangle(self.last_move_data)
 
 
     def change_last_move_data(self, *, from_pos: tuple[int, int], to_pos: tuple[int, int]):
@@ -381,3 +362,14 @@ class Render:
     def clear_last_move_data(self):
         self.last_move_data["has_data"] = False
     # last move block >
+
+
+    def draw_rectangle(self, data):
+        for x, y in data["data"]:
+            rl.draw_rectangle(
+                pos_x=x * self.tile_size,
+                pos_y=y * self.tile_size,
+                width=self.tile_size,
+                height=self.tile_size,
+                color=data["color"]
+            )
