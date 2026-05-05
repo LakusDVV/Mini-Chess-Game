@@ -77,37 +77,37 @@ class Game_UI:
                 else:
                     captures.append(move.to_pos)
             
-            self.render.change_highlighting_data(captures=captures, moves=moves)
-            self.render.change_highlighting_selected_cell_data(first_data["selected_piece"].cord)
+            self.render.set_data_moves(captures=captures, moves=moves)
+            self.render.set_data_highlight(position=first_data["selected_piece"].cord, name_highlight="selected")
             self.cheker = remember_available_moves(moves)
             self.cheker_on = True
         else:
-            self.render.clear_highlighting_data()
-            self.render.clear_highlighting_selected_cell_data()
+            self.render.clear_highlight_data(name_highlight="howerd")
+            self.render.clear_highlight_data(name_highlight="selected")
             self.cheker_on = False
  
 
     def cheking_cell(self, x, y):
         draw_on = self.cheker(x, y)
         if draw_on:
-            self.render.change_highlighting_of_the_selected_cell_data((x, y))
+            self.render.set_data_highlight(position=[(x, y)], name_highlight="howered")
         else:
-            self.render.clear_highlighting_of_the_selected_cell_data()
+            self.render.clear_highlight_data(name_highlight="howered")
 
 
     def clear_render_data_first_click(self):
-        self.render.clear_highlighting_data()
-        self.render.clear_highlighting_of_the_selected_cell_data()
-        self.render.clear_highlighting_selected_cell_data()
+        self.render.clear_highlight_data(name_highlight="moves")
+        self.render.clear_highlight_data(name_highlight="howerd")
+        self.render.clear_highlight_data(name_highlight="selected")
         self.cheker_on = False
 
 
     def update_highlighting_second_data(self, second_data):
-        self.render.change_last_move_data(from_pos=second_data["move_from"], to_pos=second_data["move_to"])
+        self.render.set_data_highlight(position=[second_data["move_from"], second_data["move_to"]], name_highlight="last_move")
 
 
     def clear_render_data_second_click(self):
-        self.render.clear_last_move_data()
+        self.render.clear_highlight_data(name_highlight="last_move")
 
 
 def remember_available_moves(data):
