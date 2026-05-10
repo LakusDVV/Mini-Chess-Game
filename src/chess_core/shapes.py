@@ -84,8 +84,6 @@ class Figure:
         raise NotImplementedError
 
 
-
-
 class Pawn(Figure):
     texture_key = "pawn"
     def get_moves(self, chessboard):
@@ -150,11 +148,6 @@ class Pawn(Figure):
                 )
 
         return moves
-
-
-    # @property
-    # def texture_key(self) -> str:
-    #     return self.texture_key
 
 
     def __str__(self):
@@ -238,13 +231,7 @@ class King(Figure):
                     )
                 )
 
-
-
         return moves
-
-    # @property
-    # def texture_key(self) -> str:
-    #     return self.texture_key
 
 
     def __str__(self):
@@ -257,10 +244,6 @@ class Queen(Figure):
     _deltas = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
     texture_key = "queen"
 
-    # @property
-    # def texture_key(self) -> str:
-    #     return
-
 
     def __str__(self):
         return "♛" if self.color == "white" else "♕"
@@ -270,9 +253,6 @@ class Rook(Figure):
 
     _deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     texture_key = "rook"
-    # @property
-    # def texture_key(self) -> str:
-    #     return
 
 
     def __str__(self):
@@ -284,9 +264,6 @@ class Bishop(Figure):
     _deltas = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
     texture_key = "bishop"
 
-    # @property
-    # def texture_key(self) -> str:
-    #     return
 
     def __str__(self):
         return "♝" if self.color == "white" else "♗"
@@ -333,10 +310,7 @@ class Knight(Figure):
                 )
 
         return moves
-
-    # @property
-    # def texture_key(self) -> str:
-    #     return
+    
 
     def __str__(self):
         return "♞" if self.color == "white" else "♘"

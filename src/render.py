@@ -3,11 +3,12 @@ import raylibpy as rl
 from typing import TYPE_CHECKING
 from src.paths import IMAGES_DIR
 from src.enums import PieceColor
-
+from src.render_dataclasses import HighlightingData, PositionData
 
 
 if TYPE_CHECKING:
     from src.chess_core.chessboard import ChessBoard
+
 
 class RenderComponent:
     def __init__(self, texture):
@@ -68,7 +69,7 @@ class Render:
         self.rows = 8
         self.cols = 8
         self.tile_size = 70
-        self.radius = self.tile_size // 5.5
+        self.piece_radius = self.tile_size // 5.5
         # width = self.cols * self.tile_size
         # height = self.rows * self.tile_size
 
@@ -76,28 +77,23 @@ class Render:
 
         self._chessboard: ChessBoard = chessboard
         self.texture_manager = texture_manager
-        self.light_color = rl.Color(r=240, g=217, b=181, a=255)
-        self.dark_color = rl.Color(r=181, g=136, b=99, a=255)
-
-
-        self.highlighting_data = {
-            "has_data": False,
-            "captures": [],
-            "moves": [],
-            "color":  rl.Color(r=129, g=151, b=105, a=255)
+        
+        self._colors = {
+            "light":    rl.Color(r=240, g=217, b=181, a=255),
+            "dark":     rl.Color(r=181, g=136, b=99, a=255),
+            "moves":    rl.Color(r=129, g=151, b=105, a=255),
+            "selected": rl.Color(r=113, g=115, b=70, a=160),
+            "check":    rl.Color(r=230, g=41, b=55, a=120),
+            "last_move":rl.Color(r=154, g=200, b=0, a=90)
         }
-
-        self.last_move_data = {
-            "has_data": False,
-            "data": [(1, 1), (1, 1)],
-            "color": rl.Color(r=154, g=200, b=0, a=90)
+        self._highlights = {
+            "moves":        HighlightingData(captures=[], moves=[], color=self._colors["moves"], texture_name="highlighting"),
+            "selected":     PositionData(position=[], color=self._colors["selected"]),
+            "howered":      PositionData(position=[], color=self._colors["selected"]),
+            "check":        PositionData(position=[], color=self._colors["check"]),
+            "last_move":    PositionData(position=[], color=self._colors["last_move"])        
         }
-
-        self.check_data: dict = {
-            "has_data": False,
-            "data": (),
-            "color":  rl.Color(r=230, g=41, b=55, a=120)
-        }
+        
 
         self.promotion_pawn_data = {
             "has_data": False,
@@ -108,52 +104,37 @@ class Render:
             }
         }
 
-        self.highlighting_the_selected_cell_data = {
-            "has_data": False,
-            "data": (1, 1),
-            "color": rl.Color(r=113, g=115, b=70, a=160)
-        }
-
-        self.highlighting_of_the_selected_cell_data ={
-            "has_data": False,
-            "data": (1, 1),
-            "color": rl.Color(r=22, g=88, b=30, a=130)
-        }
-
-
-    def get_tile_color(self, x: int, y: int) -> rl.Color:
-        """
-        Returns the color tile for the tile
-
-        Args:
-            x (int): cord x tile
-            y (int): cord y tile
-
-        Returns:
-            rl.Color: the color tile
-        """
-        return self.light_color if (x + y) % 2 == 0 else self.dark_color
-
+    
 
     def draw(self):
         rl.begin_drawing()
         rl.clear_background(rl.RAYWHITE)
 
-        self.draw_tiles()
-        self.draw_highlighting_selected_cell()
-        self.draw_highlighting_of_the_selected_cell()
-        self.draw_last_move()
+        # Draw the first layer, the board 
+        self.draw_board()
+
+        
+
+        # Draw the highlights
+        for name in ["selected", "howered", "last_move", "check"]:
+            self.draw_highlight_rectangle(self._highlights[name])
+
+        # Draw the thirs layer, the figures
         self.draw_figures()
-        self.draw_highlighting()
-        self.draw_check_king()
-        self.draw_select_promotion_pawn()
+
+        # Draw moved and captures
+        self.draw_move_indecators()
+
+        # Promotion
+        # self.draw_promotion_menu()
+                
 
         rl.end_drawing()
 
 
-    def draw_tiles(self) -> None:
+    def draw_board(self) -> None:
         """
-        Draw tiles
+        Drawing board
         """
 
         for y in range(self.cols):
@@ -168,208 +149,81 @@ class Render:
                 )
 
 
-    def draw_figures(self) -> None:
+    def get_tile_color(self, x: int, y: int) -> rl.Color:
+        """
+        Returns the color tile for the tile
+        """
+        return self._colors["light"] if (x + y) % 2 == 0 else self._colors["dark"]
 
+
+    def draw_figures(self) -> None:
         figures = self._chessboard.get_figures()
 
         for fig in figures:
             fig.draw()
 
 
+    def draw_move_indecators(self):
+        highlight: HighlightingData = self._highlights["moves"]
+        highlight_hower: PositionData = self._highlights["howered"]
 
-    # highlighting moves block <
-    def draw_highlighting(self) -> None:
-        highlighting_texture = self.texture_manager.get_texture("highlighting")
-        cel_x, cel_y = self.highlighting_of_the_selected_cell_data["data"]
-        tr = self.highlighting_of_the_selected_cell_data["has_data"]
+        for x, y in highlight.moves:
+            if highlight_hower.position == [(x, y)]:
+                continue
+            
+            self.draw_circle_at(x=x, y=y, color=highlight.color)
+        
+        for x, y in highlight.captures:
+            if highlight_hower.position == [(x, y)]:
+                continue
 
-        if self.highlighting_data["has_data"]:
-            for nx, ny in self.highlighting_data["captures"]:
-                tx = nx * self.tile_size
-                ty = ny * self.tile_size
-                if tr and (nx, ny) == (cel_x, cel_y):
-                    continue
-
-
-                rl.draw_texture(
-                    texture=highlighting_texture,
-                    pos_x=tx,
-                    pos_y=ty,
-                    tint=rl.WHITE
-                )
-
-            for nx, ny in self.highlighting_data["moves"]:
-                cx = nx * self.tile_size + self.tile_size // 2
-                cy = ny * self.tile_size + self.tile_size // 2
-                if tr and (nx, ny) == (cel_x, cel_y):
-                    continue
-
-                rl.draw_circle(
-                    center_x=cx,
-                    center_y=cy,
-                    radius=self.radius,
-                    color=self.highlighting_data["color"]
-                )
+            self.draw_texture_at(x=x, y=y, texture_name=highlight.texture_name)
 
 
-    def change_highlighting_data(self, *, captures: list, moves: list):
-        if captures or moves:
-            self.highlighting_data["has_data"] = True
-            self.highlighting_data["captures"] = captures
-            self.highlighting_data["moves"] = moves
+    def draw_circle_at(self, x:int, y:int, color: rl.Color):
+        cx = x * self.tile_size + self.tile_size // 2
+        cy = y * self.tile_size + self.tile_size // 2
+        rl.draw_circle(
+            center_x=cx,
+            center_y=cy,
+            radius=self.piece_radius,
+            color=color
+        )
+    
+
+    def draw_texture_at(self, x:int, y:int, texture_name:str) -> None:
+        texture = self.texture_manager.get_texture(texture_name)
+        rl.draw_texture(
+            pos_x= x * self.tile_size,
+            pos_y= y * self.tlie_size,
+            texture=texture,
+            tint=rl.WHITE
+        )
 
 
-    def clear_highlighting_data(self):
-        self.highlighting_data["has_data"] = False
-    # highlighting moves block >
+    def draw_highlight_rectangle(self, highlight: PositionData) -> None:
+        
+        if not highlight.position:
+            return
 
-
-
-    # highlighting selected cell block <
-    def draw_highlighting_selected_cell(self) -> None:
-        if self.highlighting_the_selected_cell_data["has_data"]:
-            self.draw_rectangle(self.highlighting_the_selected_cell_data)
-
-
-    def change_highlighting_selected_cell_data(self, cord:tuple[int, int]):
-        self.highlighting_the_selected_cell_data["data"] = cord
-        self.highlighting_the_selected_cell_data["has_data"] = True
-
-
-    def clear_highlighting_selected_cell_data(self):
-        self.highlighting_the_selected_cell_data["has_data"] = False
-
-    # highlighting selected cell block >
-
-
-
-    # highlighting selected cell block <
-    def draw_highlighting_of_the_selected_cell(self) -> None:
-        if self.highlighting_of_the_selected_cell_data["has_data"]:
-            self.draw_rectangle(self.highlighting_of_the_selected_cell_data)
-
-
-    def change_highlighting_of_the_selected_cell_data(self, cord: tuple[int, int]):
-        self.highlighting_of_the_selected_cell_data["data"] = cord
-        self.highlighting_of_the_selected_cell_data["has_data"] = True
-
-
-    def clear_highlighting_of_the_selected_cell_data(self):
-        self.highlighting_of_the_selected_cell_data["has_data"] = False
-    # highlighting selected cell block >
-
-
-
-    # check king block <
-    def draw_check_king(self) -> None:
-        if self.check_data["has_data"]:
-            self.draw_rectangle(self.check_data)
-
-
-    def change_check_data(self, new_pos: tuple[int, int]):
-        self.check_data["data"] = new_pos
-        self.check_data["has_data"] = True
-
-
-    def clear_check_data(self):
-        self.check_data["data"] = ()
-        self.check_data["has_data"] = False
-    # check king block >
-
-
-
-    # promotion pawn block <
-    def draw_select_promotion_pawn(self) -> None:
-        if self.promotion_pawn_data["has_data"]:
-            data = self.promotion_pawn_data["data"]
-
-            if data["color"] == PieceColor.WHITE:
-                queen_t = self.texture_manager.get_texture("white_queen")
-                knight_t = self.texture_manager.get_texture("white_knight")
-                rook_t = self.texture_manager.get_texture("white_rook")
-                bishop_t = self.texture_manager.get_texture("white_bishop")
-            else:
-                queen_t = self.texture_manager.get_texture("black_queen")
-                knight_t = self.texture_manager.get_texture("black_knight")
-                rook_t = self.texture_manager.get_texture("black_rook")
-                bishop_t = self.texture_manager.get_texture("black_bishop")
-
-            x, y = data["cord"]
-            direct = data["direction"]
-
-            figures = [queen_t, knight_t, rook_t, bishop_t]
-
-            for index, item in enumerate(figures):
-                rl.draw_texture(
-                    texture=item,
-                    pos_x=x * self.tile_size,
-                    pos_y=(y - direct * index) * self.tile_size,
-                    tint=rl.WHITE
-                )
-
-            # rl.draw_texture(
-            #     texture=queen_t,
-            #     pos_x=x * self.tile_size,
-            #     pos_y=y * self.tile_size,
-            #     tint=rl.WHITE
-            # )
-            #
-            # rl.draw_texture(
-            #     texture=knight_t,
-            #     pos_x=x * self.tile_size,
-            #     pos_y=(y - direct * 1) * self.tile_size,
-            #     tint=rl.WHITE
-            # )
-            #
-            # rl.draw_texture(
-            #     texture=rook_t,
-            #     pos_x=x * self.tile_size,
-            #     pos_y=(y - direct * 2) * self.tile_size,
-            #     tint=rl.WHITE
-            # )
-            # rl.draw_texture(
-            #     texture=bishop_t,
-            #     pos_x=x * self.tile_size,
-            #     pos_y=(y - direct * 3) * self.tile_size,
-            #     tint=rl.WHITE
-            # )
-
-
-    def change_promotion_pawn_data(self, color: PieceColor, direction: int, cord: tuple[int, int]):
-        self.promotion_pawn_data["has_data"] = True
-        self.promotion_pawn_data["data"]["color"] = color
-        self.promotion_pawn_data["data"]["direction"] = direction
-        self.promotion_pawn_data["data"]["cord"] = cord
-
-
-    def clear_promotion_pawn_data(self):
-        self.promotion_pawn_data["has_data"] = False
-    # promotion pawn block >
-
-
-
-    # last move block <
-    def draw_last_move(self) -> None:
-        if self.last_move_data["has_data"]:
-            self.draw_rectangle(self.last_move_data)
-
-
-    def change_last_move_data(self, *, from_pos: tuple[int, int], to_pos: tuple[int, int]):
-        self.last_move_data["data"] = [from_pos, to_pos]
-        self.last_move_data["has_data"] = True
-
-
-    def clear_last_move_data(self):
-        self.last_move_data["has_data"] = False
-    # last move block >
-
-
-    def draw_rectangle(self, data):
-        for x, y in data["data"]:
+        for x, y in highlight.position:
             rl.draw_rectangle(
                 pos_x=x * self.tile_size,
                 pos_y=y * self.tile_size,
                 width=self.tile_size,
                 height=self.tile_size,
-                color=data["color"]
+                color=highlight.color
             )
+
+
+    def set_data_highlight(self, *, position, name_highlight) -> None:
+        self._highlights[name_highlight].position = position
+
+        
+    def set_data_moves(self, *, captures, moves):
+        self._highlights["moves"].moves = moves
+        self._highlights["moves"].captures = captures
+
+
+    def clear_highlight_data(self, *, name_highlight) -> None:
+        self._highlights[name_highlight].clear()
