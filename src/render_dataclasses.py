@@ -13,8 +13,8 @@ class HighlightingData:
     texture_name: str = None
 
     def clear(self):
-        captures = []
-        moves = []
+        self.captures = []
+        self.moves = []
 
     
 @dataclass
@@ -24,7 +24,7 @@ class PositionData:
     color: rl.Color = None
 
     def clear(self):
-        position = []
+        self.position = []
 
 
 @dataclass

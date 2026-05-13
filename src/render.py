@@ -103,7 +103,6 @@ class Render:
                 "cord": (0, 0) # (x, y)
             }
         }
-
     
 
     def draw(self):
@@ -111,9 +110,7 @@ class Render:
         rl.clear_background(rl.RAYWHITE)
 
         # Draw the first layer, the board 
-        self.draw_board()
-
-        
+        self.draw_board()        
 
         # Draw the highlights
         for name in ["selected", "howered", "last_move", "check"]:
@@ -128,7 +125,6 @@ class Render:
         # Promotion
         # self.draw_promotion_menu()
                 
-
         rl.end_drawing()
 
 
@@ -195,7 +191,7 @@ class Render:
         texture = self.texture_manager.get_texture(texture_name)
         rl.draw_texture(
             pos_x= x * self.tile_size,
-            pos_y= y * self.tlie_size,
+            pos_y= y * self.tile_size,
             texture=texture,
             tint=rl.WHITE
         )
@@ -206,7 +202,7 @@ class Render:
         if not highlight.position:
             return
 
-        for x, y in highlight.position:
+        for x, y in highlight.position:            
             rl.draw_rectangle(
                 pos_x=x * self.tile_size,
                 pos_y=y * self.tile_size,

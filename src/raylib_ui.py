@@ -45,7 +45,6 @@ class Game_UI:
         if self.cheker_on:
             self.cheking_cell(board_x, board_y)
 
-
         mouse_click: bool = rl.is_mouse_button_pressed(rl.MOUSE_LEFT_BUTTON)
 
         if mouse_click:
@@ -64,8 +63,6 @@ class Game_UI:
 
             print(self.chess_game.get_game_info())
 
-        
-
 
     def update_highlighting_first_data(self, first_data):
         if first_data:
@@ -82,7 +79,7 @@ class Game_UI:
             self.cheker = remember_available_moves(moves)
             self.cheker_on = True
         else:
-            self.render.clear_highlight_data(name_highlight="howerd")
+            self.render.clear_highlight_data(name_highlight="howered")
             self.render.clear_highlight_data(name_highlight="selected")
             self.cheker_on = False
  
