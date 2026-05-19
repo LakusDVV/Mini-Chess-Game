@@ -12,7 +12,7 @@
 <!-- Project name which has linc to repository -->
 <h1 align="center">
 
-  <a href="https://github.com/LakusDVV/Mini-Chess-Game"> Mini-Chess Game </a>    
+  <a href="https://github.com/LakusDVV/Mini-Chess-Game"> Mini-Chess-Game </a>    
 
 </h1>
 
