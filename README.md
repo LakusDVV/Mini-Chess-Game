@@ -3,7 +3,7 @@
 <p align="center">                                         <!--p - paragraph (абзац) -->
 
   <a href="https://github.com/LakusDVV/">
-     <img width="238" height="243" alt="VC logo" src="https://github.com/user-attachments/assets/2217036d-9917-4065-bc9d-5b76db153c18" />
+      <img src="assets/images/VC logo.png" width="120">
   </a>
 
 </p>
