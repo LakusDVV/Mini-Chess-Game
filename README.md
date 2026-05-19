@@ -1,9 +1,10 @@
 
+
 <!-- Avatar which has linc to user profile -->
 <p align="center">                                         <!--p - paragraph (абзац) -->
 
   <a href="https://github.com/LakusDVV/">
-    <img src="https://github.com/LakusDVV.png" width="120">
+    <img width="196" height="180" alt="Снимок экрана от 2026-05-19 15-24-56(1)" src="https://github.com/user-attachments/assets/775695b3-3577-452f-80c8-35e4c65cf142" />
   </a>
 
 </p>
