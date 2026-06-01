@@ -54,9 +54,11 @@ class Game_UI:
             game_data = self.chess_game.update(board_x=board_x, board_y=board_y)
             
             if game_data["game_status"] == GameStatus.IN_PROGRESS:
+
                 if game_data["select_number"] == 1:
                     self.update_highlighting_first_data(game_data["first_data"])
                     self.clear_render_data_second_click()
+                
                 elif game_data["select_number"] == 2:
                     self.update_highlighting_second_data(game_data["second_data"])
                     self.clear_render_data_first_click()
