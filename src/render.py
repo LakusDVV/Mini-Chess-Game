@@ -80,13 +80,13 @@ class Render:
         self.texture_manager = texture_manager
         
         self._colors = {
-            "light":    rl.Color(r=240, g=217, b=181, a=255),
-            "dark":     rl.Color(r=181, g=136, b=99, a=255),
-            "moves":    rl.Color(r=129, g=151, b=105, a=255),
-            "next_moves":rl.Color(r=0, g=0, b=0, a=140),
-            "selected": rl.Color(r=113, g=115, b=70, a=160),
-            "check":    rl.Color(r=230, g=41, b=55, a=120),
-            "last_move":rl.Color(r=154, g=200, b=0, a=90)
+            "light":        rl.Color(r=240, g=217, b=181, a=255),
+            "dark":         rl.Color(r=181, g=136, b=99, a=255),
+            "moves":        rl.Color(r=129, g=151, b=105, a=255),
+            "next_moves":   rl.Color(r=147, g=108, b=182, a=140),
+            "selected":     rl.Color(r=113, g=115, b=70, a=160),
+            "check":        rl.Color(r=230, g=41, b=55, a=120),
+            "last_move":    rl.Color(r=154, g=200, b=0, a=90)
         }
         self._highlights = {
             "moves":        HighlightingData(captures=[], moves=[], color=self._colors["moves"], texture_name="highlighting"),
