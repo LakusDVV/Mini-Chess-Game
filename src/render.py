@@ -43,6 +43,7 @@ class TextureManager:
         self._load("white_knight",  "white_knight.png")
         self._load("white_pawn",    "white_pawn.png")
         self._load("highlighting",  "highlighting_texture.png")
+        self._load("highlighting_next_move", "highlighting_next_move_texture.png")
 
 
     def _load(self, key: str, filename: str):
@@ -82,12 +83,14 @@ class Render:
             "light":    rl.Color(r=240, g=217, b=181, a=255),
             "dark":     rl.Color(r=181, g=136, b=99, a=255),
             "moves":    rl.Color(r=129, g=151, b=105, a=255),
+            "next_moves":rl.Color(r=0, g=0, b=0, a=140),
             "selected": rl.Color(r=113, g=115, b=70, a=160),
             "check":    rl.Color(r=230, g=41, b=55, a=120),
             "last_move":rl.Color(r=154, g=200, b=0, a=90)
         }
         self._highlights = {
             "moves":        HighlightingData(captures=[], moves=[], color=self._colors["moves"], texture_name="highlighting"),
+            "next_moves":   HighlightingData(captures=[], moves=[], color=self._colors["next_moves"], texture_name="highlighting_next_move"),
             "selected":     PositionData(position=[], color=self._colors["selected"]),
             "howered":      PositionData(position=[], color=self._colors["selected"]),
             "check":        PositionData(position=[], color=self._colors["check"]),
