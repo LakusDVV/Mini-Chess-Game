@@ -58,21 +58,21 @@ class MoveRecord:
 
 
 @dataclass
-class History:
+class Stak:
     def __init__(self):
-        self._history: list[MoveRecord] = []
+        self._list: list = []
 
     def push(self, item) -> None:
-        self._history.append(item)
+        self._list.append(item)
 
 
-    def top(self) -> MoveRecord:
-        return self._history[-1]
+    def top(self):
+        return self._list[-1]
 
 
-    def pop(self) -> MoveRecord:
-        return self._history.pop()
+    def pop(self):
+        return self._list.pop()
 
 
     def is_empty(self):
-        return len(self._history) == 0
+        return len(self._list) == 0

@@ -3,7 +3,7 @@ from typing import Optional
 from src.chess_core.chessboard import ChessBoard
 from src.enums import MoveResult, PieceColor, MoveSpecial, GameStatus, ClickResult, Errors
 
-from src.dataclass import Move, MoveRecord, CastlingRights, History
+from src.dataclass import Move, MoveRecord, CastlingRights, Stak
 from src.chess_core.shapes import Figure, King, Queen, Bishop, Knight, Rook, Pawn
 
 
@@ -15,10 +15,11 @@ class Game:
 
         self.chessboard = ChessBoard()
         self.selected_piece: Figure = Figure()
-        self.history: History = History()
+        self.Stak: Stak = Stak()
         
         self.available_moves = []
         self.avl_moves: list[tuple[int, int]] = []
+        self.buffer: MoveRecord = None
         
         self.game_status = GameStatus.IN_PROGRESS
         self.has_move: PieceColor = PieceColor.WHITE        
@@ -47,7 +48,7 @@ class Game:
 
             sel_fig = self.promotion_figure
 
-            rec = self.history.pop()
+            rec = self.Stak.pop()
             prom_rec = make_promotion(fig=sel_fig, record=rec)
             if prom_rec:
                 self.chessboard.undo(rec)
@@ -58,7 +59,6 @@ class Game:
 
         try:
             status = self.selected_cell(board_x=board_x, board_y=board_y)
-
 
             data["select_number"] = status["select_number"]
             data["first_data"] = status["first_data"]
@@ -74,7 +74,6 @@ class Game:
             print(self.chessboard)
 
         return data
-
 
 
     def create_figures(self, texture_manager):
@@ -122,7 +121,8 @@ class Game:
         data = {
             "select_number": 1, # 1 - first move, 2 - Second move
             "first_data": {},
-            "second_data": {}
+            "second_data": {},
+            "can_do": 1 # 1 - can do, 0 - cannot do
         }
 
         result = self.analyze_select(pos=(board_x, board_y))
@@ -144,7 +144,7 @@ class Game:
 
 
             case ClickResult.MOVE:
-                stat = self._second_select(piece=piece, board_x=board_x, board_y=board_y)
+                stat = self._second_select(board_x=board_x, board_y=board_y)
 
                 data["select_number"] = 2
                 data["second_data"] = stat
@@ -192,16 +192,6 @@ class Game:
         if data["moves_and_statuses"]: # If figure have at least one move
             right_moves = data["right_moves"]
 
-            # for val in data["moves_and_statuses"]:
-            #     if val != MoveResult.CHECK:
-            #         break
-            # else:
-            #     returned_data["status"] = MoveResult.CHECK
-            #     return returned_data
-
-
-            # for move in right_moves:
-            #     self.avl_moves.append(move.to_pos)
 
             self.available_moves = right_moves
             returned_data["moves"] = right_moves
@@ -212,13 +202,12 @@ class Game:
         return returned_data
 
 
-    def _second_select(self, *, piece: Figure, board_x: int, board_y: int):
+    def _second_select(self, *, board_x: int, board_y: int):
         data = {
             "move_from": (0, 0),
             "move_to": (0, 0),
             "move_result": MoveResult.NOTHING
         }
-
 
         move = self.find_move_to(to_x=board_x, to_y=board_y)
 
@@ -231,15 +220,24 @@ class Game:
 
         if move:
             to_x, to_y = record.to_pos
+
             if isinstance(record.piece, Pawn) and to_y == last_line:
                 self.promotion = True
-            self.make_move(record)
+
+            if self.buffer is None:
+                if record.piece.color != self.has_move:
+                    self.buffer = record
+                else:
+                    self.make_move(record)
+            else:
+                self.make_move(self.buffer)
+                self.buffer = None
 
             data["move_result"] = MoveResult.OK
 
         else:
             data["move_result"] =  MoveResult.ERROR
-        
+
         return data
 
 
@@ -253,7 +251,7 @@ class Game:
 
         self.chessboard.apply_move(record)
 
-        self.history.push(record)
+        self.Stak.push(record)
         self.available_moves.clear()
 
 
@@ -404,8 +402,6 @@ class Game:
 
             prev_castling_rights= prev_castling_rights,
             prev_en_passant= prev_en_passant
-
-
         )
         return mr
 
