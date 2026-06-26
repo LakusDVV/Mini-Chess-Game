@@ -30,20 +30,20 @@ class TextureManager:
 
 
     def load_textures(self):
-        self._load("black_king",    "black_king.png")
-        self._load("black_queen",   "black_queen.png")
-        self._load("black_rook",    "black_rook.png")
-        self._load("black_bishop",  "black_bishop.png")
-        self._load("black_knight",  "black_knight.png")
-        self._load("black_pawn",    "black_pawn.png")
-        self._load("white_king",    "white_king.png")
-        self._load("white_queen",   "white_queen.png")
-        self._load("white_rook",    "white_rook.png")
-        self._load("white_bishop",  "white_bishop.png")
-        self._load("white_knight",  "white_knight.png")
-        self._load("white_pawn",    "white_pawn.png")
-        self._load("highlighting",  "highlighting_texture.png")
-        self._load("highlighting_next_move", "highlighting_next_move_texture.png")
+        self._load("black_king",                "black_king.png")
+        self._load("black_queen",               "black_queen.png")
+        self._load("black_rook",                "black_rook.png")
+        self._load("black_bishop",              "black_bishop.png")
+        self._load("black_knight",              "black_knight.png")
+        self._load("black_pawn",                "black_pawn.png")
+        self._load("white_king",                "white_king.png")
+        self._load("white_queen",               "white_queen.png")
+        self._load("white_rook",                "white_rook.png")
+        self._load("white_bishop",              "white_bishop.png")
+        self._load("white_knight",              "white_knight.png")
+        self._load("white_pawn",                "white_pawn.png")
+        self._load("highlighting",              "highlighting_texture.png")
+        self._load("highlighting_next_move",    "highlighting_next_move_texture.png")
 
 
     def _load(self, key: str, filename: str):
@@ -219,9 +219,9 @@ class Render:
         self._highlights[name_highlight].position = position
 
         
-    def set_data_moves(self, *, captures, moves):
-        self._highlights["moves"].moves = moves
-        self._highlights["moves"].captures = captures
+    def set_data_moves(self, *, captures, moves, moves_type):
+        self._highlights[moves_type].moves = moves
+        self._highlights[moves_type].captures = captures
 
 
     def clear_highlight_data(self, *, name_highlight) -> None:

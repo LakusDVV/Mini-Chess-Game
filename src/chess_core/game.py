@@ -64,7 +64,7 @@ class Game:
             data["first_data"] = status["first_data"]
             data["second_data"] = status["second_data"]
 
-            if data["select_number"] == 2:
+            if data["select_number"] == 2 and data["second_data"]["move_result"] == MoveResult.OK:
                 self.after_move()
 
 
@@ -121,8 +121,7 @@ class Game:
         data = {
             "select_number": 1, # 1 - first move, 2 - Second move
             "first_data": {},
-            "second_data": {},
-            "can_do": 1 # 1 - can do, 0 - cannot do
+            "second_data": {}
         }
 
         result = self.analyze_select(pos=(board_x, board_y))
@@ -183,7 +182,8 @@ class Game:
     def _first_select(self, *, piece: Figure):
         returned_data = {
             "selected_piece": piece,
-            "moves": []
+            "moves": [],
+            "can_move": 1
         }
 
         moves = piece.get_moves(chessboard=self.chessboard)
@@ -196,9 +196,9 @@ class Game:
             self.available_moves = right_moves
             returned_data["moves"] = right_moves
 
-            return returned_data
+        if (piece.color != self.has_move):
+            returned_data["can_move"] = 0
 
-        # returned_data["status"] = MoveResult.INVALID_MOVE
         return returned_data
 
 
@@ -224,16 +224,14 @@ class Game:
             if isinstance(record.piece, Pawn) and to_y == last_line:
                 self.promotion = True
 
-            if self.buffer is None:
-                if record.piece.color != self.has_move:
-                    self.buffer = record
-                else:
-                    self.make_move(record)
-            else:
-                self.make_move(self.buffer)
-                self.buffer = None
 
-            data["move_result"] = MoveResult.OK
+            if record.piece.color != self.has_move:
+                if (self.buffer is None):
+                    self.buffer = record
+            else:
+                self.make_move(record=record)
+                data["move_result"] = MoveResult.OK
+            
 
         else:
             data["move_result"] =  MoveResult.ERROR

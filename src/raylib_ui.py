@@ -76,7 +76,12 @@ class Game_UI:
                 else:
                     captures.append(move.to_pos)
             
-            self.render.set_data_moves(captures=captures, moves=moves)
+            moves_type = "moves"
+            if first_data["can_move"] == 0:
+                moves_type = "next_moves"
+
+            
+            self.render.set_data_moves(captures=captures, moves=moves, moves_type=moves_type)
             self.render.set_data_highlight(position=[first_data["selected_piece"].cord], name_highlight="selected")
             self.cheker = remember_available_moves(moves)
             self.cheker_on = True
