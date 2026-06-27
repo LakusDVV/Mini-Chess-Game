@@ -163,20 +163,21 @@ class Render:
 
 
     def draw_move_indecators(self):
-        highlight: HighlightingData = self._highlights["moves"]
-        highlight_hower: PositionData = self._highlights["howered"]
-
-        for x, y in highlight.moves:
-            if highlight_hower.position == [(x, y)]:
-                continue
-            
-            self.draw_circle_at(x=x, y=y, color=highlight.color)
+        target = "moves"
+        if self._highlights[target].moves == [] and self._highlights[target].captures == []:
+            target = "next_moves"
         
-        for x, y in highlight.captures:
-            if highlight_hower.position == [(x, y)]:
-                continue
+        if self._highlights[target].moves or self._highlights[target].captures:
+            highlight: HighlightingData = self._highlights[target]
+            highlight_hower: PositionData = self._highlights["howered"]
 
-            self.draw_texture_at(x=x, y=y, texture_name=highlight.texture_name)
+            for x, y in highlight.moves:
+                if not highlight_hower.position == [(x, y)]:
+                    self.draw_circle_at(x=x, y=y, color=highlight.color)
+            
+            for x, y in highlight.captures:
+                if not highlight_hower.position == [(x, y)]:
+                    self.draw_texture_at(x=x, y=y, texture_name=highlight.texture_name)
 
 
     def draw_circle_at(self, x:int, y:int, color: rl.Color):
