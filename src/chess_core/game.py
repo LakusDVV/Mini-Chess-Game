@@ -19,7 +19,7 @@ class Game:
         
         self.available_moves = []
         self.avl_moves: list[tuple[int, int]] = []
-        self.buffer: MoveRecord = None
+        self.buffer: tuple = ()
         
         self.game_status = GameStatus.IN_PROGRESS
         self.has_move: PieceColor = PieceColor.WHITE        
@@ -36,12 +36,11 @@ class Game:
             "game_status": GameStatus.IN_PROGRESS,
             "select_number": 0,
             "first_data": {},
-            "second_data": {},            
+            "second_data": {},
             "errors": Errors.Nothing
         }
 
         if self.promotion:
-
             if self.promotion_figure is None:
                 data["Errors"] = Errors.Promotion_pawn_dont_select
                 return data
@@ -67,11 +66,17 @@ class Game:
             if data["select_number"] == 2 and data["second_data"]["move_result"] == MoveResult.OK:
                 self.after_move()
 
-
         except Exception as ex:
             print(f'Error {ex}')
             print(self.get_game_info())
             print(self.chessboard)
+
+        if (self.buffer != ()):
+            if (self.buffer[1].piece.color == self.has_move):
+                if (self.filter_move(move=self.buffer[0]) == MoveResult.OK):
+                    self.make_move(record=self.buffer[1])
+                    self.buffer = ()
+                    self.after_move()
 
         return data
 
@@ -99,7 +104,7 @@ class Game:
                 texture_manager=texture_manager
             )
 
-            for fig_name, conf in figures.items():
+            for conf in figures.values():
                 self.append_figures_on_board(
                     figures=get_figures_of_config(config=conf)
                 )
@@ -147,7 +152,6 @@ class Game:
 
                 data["select_number"] = 2
                 data["second_data"] = stat
-
 
                 self.first_select = False
 
@@ -219,7 +223,7 @@ class Game:
         last_line = 7 if record.piece.color == PieceColor.WHITE else 0
 
         if move:
-            to_x, to_y = record.to_pos
+            _, to_y = record.to_pos
 
             if isinstance(record.piece, Pawn) and to_y == last_line:
                 self.promotion = True
@@ -229,11 +233,8 @@ class Game:
                 self.make_move(record=record)
                 data["move_result"] = MoveResult.OK                
             else:
-                pass
-                # if (self.buffer is None):
-                #     self.buffer = record
-                
-            
+                if (self.buffer == ()): self.buffer = (move, record)
+                else: self.buffer = ()
 
         else:
             data["move_result"] =  MoveResult.ERROR
@@ -247,8 +248,6 @@ class Game:
 
 
     def make_move(self, record: MoveRecord):
-
-
         self.chessboard.apply_move(record)
 
         self.Stak.push(record)
@@ -274,10 +273,10 @@ class Game:
                     moves = fig.get_moves(chessboard=self.chessboard)
                     right_moves = self.filter_moves(moves)["right_moves"]
 
-
                     # If any figure can move
                     if right_moves:
                         break
+
             # If all figures cannot make move
             else:
                 king_is_check = self.chessboard.king_is_check(color=color)
@@ -286,6 +285,7 @@ class Game:
                     status = GameStatus.CHECKMATE
                 else:
                     status = GameStatus.PAT
+
         return status
 
 
@@ -293,10 +293,11 @@ class Game:
         for move in self.available_moves:
             if move.to_pos == (to_x, to_y):
                 return move
+
         return None
 
 
-    def filter_moves(self, moves: list) -> dict:
+    def filter_moves(self, moves: list[Move]) -> dict:
         dic: dict = {
             "right_moves": [],
             "moves_and_statuses": {}
@@ -310,13 +311,14 @@ class Game:
                 if status == MoveResult.OK:
                     dic["right_moves"].append(move)
 
-
             return dic
+
         return dic
 
 
-    def filter_move(self, move):
+    def filter_move(self, move: Move):
         mr = self.move_to_move_record(move=move)
+
         self.chessboard.apply_move(mr)
         king_is_check: bool = self.chessboard.king_is_check(move.piece.color)
         self.chessboard.undo(mr)
@@ -348,7 +350,6 @@ class Game:
 
 
     def move_to_move_record(self, move: Move):
-
         captured_piece: Optional[Figure] = None
         captured_pos: Optional[tuple[int, int]] = None
 
