@@ -101,6 +101,7 @@ class Game_UI:
 
     def clear_render_data_first_click(self):
         self.render.clear_highlight_data(name_highlight="moves")
+        self.render.clear_highlight_data(name_highlight="next_moves")
         self.render.clear_highlight_data(name_highlight="howered")
         self.render.clear_highlight_data(name_highlight="selected")
         self.cheker_on = False
