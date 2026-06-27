@@ -31,7 +31,7 @@ class Game:
         print(self.chessboard.castling_rights)
 
 
-    def update(self, board_x:int=0, board_y:int=0, command = 0):
+    def update(self, board_x:int=0, board_y:int=0):
         data = {
             "game_status": GameStatus.IN_PROGRESS,
             "select_number": 0,
@@ -225,12 +225,14 @@ class Game:
                 self.promotion = True
 
 
-            if record.piece.color != self.has_move:
-                if (self.buffer is None):
-                    self.buffer = record
-            else:
+            if record.piece.color == self.has_move:
                 self.make_move(record=record)
-                data["move_result"] = MoveResult.OK
+                data["move_result"] = MoveResult.OK                
+            else:
+                pass
+                # if (self.buffer is None):
+                #     self.buffer = record
+                
             
 
         else:
