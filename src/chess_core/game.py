@@ -19,7 +19,7 @@ class Game:
         
         self.available_moves = []
         self.avl_moves: list[tuple[int, int]] = []
-        self.buffer: tuple = ()
+        self.buffer: Move = None
         
         self.game_status = GameStatus.IN_PROGRESS
         self.has_move: PieceColor = PieceColor.WHITE        
@@ -71,11 +71,13 @@ class Game:
             print(self.get_game_info())
             print(self.chessboard)
 
-        if (self.buffer != ()):
-            if (self.buffer[1].piece.color == self.has_move):
-                if (self.filter_move(move=self.buffer[0]) == MoveResult.OK):
-                    self.make_move(record=self.buffer[1])
-                    self.buffer = ()
+        if (self.buffer and self.buffer.piece.color == self.has_move):
+            print("Buff work 2")
+            current_piece = self.chessboard.get_piece(cord=self.buffer.from_pos)
+            if (current_piece is self.buffer.piece):
+                if (self.filter_move(move=self.buffer) == MoveResult.OK):
+                    self.make_move(record=self.move_to_move_record(self.buffer))
+                    self.buffer = None
                     self.after_move()
 
         return data
@@ -233,8 +235,10 @@ class Game:
                 self.make_move(record=record)
                 data["move_result"] = MoveResult.OK                
             else:
-                if (self.buffer == ()): self.buffer = (move, record)
-                else: self.buffer = ()
+                if (not self.buffer): 
+                    self.buffer = move
+                    print("Buff work 1")
+                else: self.buffer = None
 
         else:
             data["move_result"] =  MoveResult.ERROR
