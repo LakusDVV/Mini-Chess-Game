@@ -15,73 +15,109 @@ class Game:
 
         self.chessboard = ChessBoard()
         self.selected_piece: Figure = Figure()
-        self.Stak: Stak = Stak()
+        self.history: Stak = Stak()
         
         self.available_moves = []
         self.avl_moves: list[tuple[int, int]] = []
         self.buffer: Move = None
         
-        self.game_status = GameStatus.IN_PROGRESS
+        self.game_status = GameStatus.PLAYING
         self.has_move: PieceColor = PieceColor.WHITE        
 
-        self.promotion_figure = None
+        self.promotion_pos: tuple[int, int] = None
         self.first_select = False
-        self.promotion = False
 
-        print(self.chessboard.castling_rights)
-
-
-    def update(self, board_x:int=0, board_y:int=0):
+    def update(self, board_x:int, board_y:int):
         data = {
-            "game_status": GameStatus.IN_PROGRESS,
-            "select_number": 0,
-            "first_data": {},
-            "second_data": {},
+            "game_status": GameStatus.PLAYING,
+            "data": {},
             "errors": Errors.Nothing
         }
 
-        if self.promotion:
-            if self.promotion_figure is None:
-                data["Errors"] = Errors.Promotion_pawn_dont_select
-                return data
+        if self.game_status == GameStatus.PLAYING:
+            data["data"] = self._update_playing(board_x, board_y)
+        
+        elif self.game_status == GameStatus.PROMOTION_SELECT:
+            data["data"] = self._update_promotion(board_x, board_y)
 
-            sel_fig = self.promotion_figure
 
-            rec = self.Stak.pop()
-            prom_rec = make_promotion(fig=sel_fig, record=rec)
-            if prom_rec:
-                self.chessboard.undo(rec)
-                self.chessboard.apply_move(prom_rec)
-                self.after_move()
+        elif self.game_status in (GameStatus.CHECKMATE, GameStatus.PAT):
+            pass
 
-                return data
+        data["game_status"] = self.game_status
 
-        try:
-            status = self.selected_cell(board_x=board_x, board_y=board_y)
+        return data
 
-            data["select_number"] = status["select_number"]
-            data["first_data"] = status["first_data"]
-            data["second_data"] = status["second_data"]
+    def _update_playing(self, board_x:int, board_y:int):
+        data = {
+            "type": ClickResult.NOTHING,
+            "data": {}
+        }
+        
+        data["type"] = self.analyze_select(pos=(board_x, board_y))
+        piece = self.chessboard.get_piece(cord=(board_x, board_y))
 
-            if data["select_number"] == 2 and data["second_data"]["move_result"] == MoveResult.OK:
-                self.after_move()
+        match data["type"]:
+            case ClickResult.SELECT:
+                self.selected_piece = piece
+                data["data"] = self._first_select(piece=piece)
+                self.first_select = True
 
-        except Exception as ex:
-            print(f'Error {ex}')
-            print(self.get_game_info())
-            print(self.chessboard)
+            case ClickResult.CHANGE_SELECTION:
+                self.selected_piece = piece
+                data["data"] = self._first_select(piece=piece)
+                self.first_select = True
+
+            case ClickResult.SECOND_SELECT:
+                self.first_select = False
+
+            case ClickResult.MOVE:
+                data["data"] = self._second_select(board_x=board_x, board_y=board_y)
+                self.first_select = False
+
+            case ClickResult.NOTHING:
+                pass
 
         if (self.buffer and self.buffer.piece.color == self.has_move):
             print("Buff work 2")
             current_piece = self.chessboard.get_piece(cord=self.buffer.from_pos)
             if (current_piece is self.buffer.piece):
                 if (self.filter_move(move=self.buffer) == MoveResult.OK):
-                    self.make_move(record=self.move_to_move_record(self.buffer))
+                    self._make_move(record=self.move_to_move_record(self.buffer))
                     self.buffer = None
-                    self.after_move()
+                    self._after_move()
+
+
+        if data["type"] == ClickResult.MOVE and data["data"]["move_result"] == MoveResult.OK:
+            self._after_move()
 
         return data
 
+    def _update_promotion(self, board_x:int, board_y:int):
+        piece: Figure = self.chessboard.get_piece(cord=self.promotion_pos)
+        result = Figure
+
+        x, y = self.promotion_pos
+        
+        dict_cord = {
+            self.promotion_pos: Queen,
+            (x, y - piece.direction * 1): Knight,
+            (x, y - piece.direction * 2): Rook,
+            (x, y - piece.direction * 3): Bishop
+        }
+
+        if (board_x, board_y) in dict_cord:
+            fig: Figure = dict_cord[(board_x, board_y)]
+            rec: MoveRecord = self.history.pop()
+            self.chessboard.undo(rec)
+            rec.promotion_pawn = fig(x=x, y=y, color=piece.color)
+            self.chessboard.apply_move(rec)
+
+            self._after_move()
+            self.game_status = GameStatus.PLAYING
+            result = fig
+
+        return result
 
     def create_figures(self, texture_manager):
         logs = ""
@@ -99,7 +135,7 @@ class Game:
         }
         for key, value in configs.items():
             logs += f"creating {key} figures \n"
-            figures = get_figures_info(
+            figures = get_figures_config(
                 color=value["color"],
                 fig_y=value["fig_y"],
                 pawn_y=value["pawn_y"],
@@ -118,49 +154,10 @@ class Game:
             status = self.chessboard.add_figure(x=x, y=y, figure=fig)
 
 
-    def after_move(self):
+    def _after_move(self):
         self.has_move = self.has_move.opposite()
 
         self.game_status = self.this_end(self.has_move)
-
-
-    def selected_cell(self, board_x, board_y):
-        data = {
-            "select_number": 1, # 1 - first move, 2 - Second move
-            "first_data": {},
-            "second_data": {}
-        }
-
-        result = self.analyze_select(pos=(board_x, board_y))
-        piece = self.chessboard.get_piece(cord=(board_x, board_y))
-
-        match result:
-            case ClickResult.SELECT:
-                self.selected_piece = piece
-                data["first_data"] = self._first_select(piece=piece)
-                self.first_select = True
-
-            case ClickResult.CHANGE_SELECTION:
-                self.selected_piece = piece
-                data["first_data"] = self._first_select(piece=piece)
-                self.first_select = True
-
-            case ClickResult.SECOND_SELECT:
-                self.first_select = False
-
-
-            case ClickResult.MOVE:
-                stat = self._second_select(board_x=board_x, board_y=board_y)
-
-                data["select_number"] = 2
-                data["second_data"] = stat
-
-                self.first_select = False
-
-            case ClickResult.NOTHING:
-                pass
-
-        return data
 
 
     def analyze_select(self, *, pos: tuple[int, int]) -> ClickResult:
@@ -232,7 +229,7 @@ class Game:
 
 
             if record.piece.color == self.has_move:
-                self.make_move(record=record)
+                self._make_move(record=record)
                 data["move_result"] = MoveResult.OK                
             else:
                 if (not self.buffer): 
@@ -251,10 +248,10 @@ class Game:
         self.avl_moves = []
 
 
-    def make_move(self, record: MoveRecord):
+    def _make_move(self, record: MoveRecord):
         self.chessboard.apply_move(record)
 
-        self.Stak.push(record)
+        self.history.push(record)
         self.available_moves.clear()
 
 
@@ -266,7 +263,7 @@ class Game:
         king_moves = king.get_moves(chessboard=self.chessboard)
         right_moves = self.filter_moves(king_moves)["right_moves"]
 
-        status = GameStatus.IN_PROGRESS
+        status = GameStatus.PLAYING
 
         # If king don't have moves
         if not right_moves:
@@ -454,7 +451,7 @@ def get_figures_of_config(*, config) -> list[Figure]:
     return figures
 
 
-def get_figures_info(*, color, fig_y, pawn_y, texture_manager):
+def get_figures_config(*, color, fig_y, pawn_y, texture_manager):
     return {
         "king": {
             "type": King,

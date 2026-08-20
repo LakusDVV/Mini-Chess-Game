@@ -34,7 +34,8 @@ class MoveSpecial(Enum):
     CAPTURE = auto()
 
 class GameStatus(Enum):
-    IN_PROGRESS = auto()
+    PLAYING = auto()
+    PROMOTION_SELECT = auto()
     PAT = auto()
     CHECKMATE = auto()
     EXIT = auto()
