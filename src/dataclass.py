@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
-from src.enums import PieceColor, MoveSpecial
+from src.enums import PieceColor, MoveSpecial, ClickResult, MoveResult
 
 if TYPE_CHECKING:
     from src.chess_core.shapes import Figure
@@ -56,11 +56,20 @@ class MoveRecord:
     promotion_pawn: Optional["Figure"] = None
 
 
+@dataclass
+class UpdateResult:
+    type: ClickResult = ClickResult.NOTHING
+    selected_piece: Optional[Figure] = None
+    moves: list = field(default_factory=list)
+    can_move: bool = True
+    move_from: tuple = (0, 0)
+    move_to: tuple = (0, 0)
+    move_result: MoveResult = MoveResult.NOTHING
+
 
 @dataclass
 class Stak:
-    def __init__(self):
-        self._list: list = []
+    _list: list = field(default_factory=list)
 
     def push(self, item) -> None:
         self._list.append(item)

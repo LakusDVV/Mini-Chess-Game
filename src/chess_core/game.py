@@ -3,7 +3,7 @@ from typing import Optional
 from src.chess_core.chessboard import ChessBoard
 from src.enums import MoveResult, PieceColor, MoveSpecial, GameStatus, ClickResult, Errors
 
-from src.dataclass import Move, MoveRecord, CastlingRights, Stak
+from src.dataclass import Move, MoveRecord, CastlingRights, Stak, UpdateResult
 from src.chess_core.shapes import Figure, King, Queen, Bishop, Knight, Rook, Pawn
 
 
@@ -18,7 +18,6 @@ class Game:
         self.history: Stak = Stak()
         
         self.available_moves = []
-        self.avl_moves: list[tuple[int, int]] = []
         self.buffer: Move = None
         
         self.game_status = GameStatus.PLAYING
@@ -26,6 +25,7 @@ class Game:
 
         self.promotion_pos: tuple[int, int] = None
         self.first_select = False
+
 
     def update(self, board_x:int, board_y:int):
         data = {
@@ -48,38 +48,52 @@ class Game:
 
         return data
 
+
     def _update_playing(self, board_x:int, board_y:int):
-        data = {
-            "type": ClickResult.NOTHING,
-            "data": {}
-        }
+        result = UpdateResult()
         
-        data["type"] = self.analyze_select(pos=(board_x, board_y))
+        result.type = self.analyze_select(pos=(board_x, board_y))
         piece = self.chessboard.get_piece(cord=(board_x, board_y))
 
-        match data["type"]:
+        match result.type:
             case ClickResult.SELECT:
                 self.selected_piece = piece
-                data["data"] = self._first_select(piece=piece)
                 self.first_select = True
+
+                first_data = self._first_select(piece=piece)
+                result.selected_piece = first_data["selected_piece"]
+                result.moves = first_data["moves"]
+                result.can_move = first_data["can_move"]
+
 
             case ClickResult.CHANGE_SELECTION:
                 self.selected_piece = piece
-                data["data"] = self._first_select(piece=piece)
                 self.first_select = True
+
+                first_data = self._first_select(piece=piece)
+                result.selected_piece = first_data["selected_piece"]
+                result.moves = first_data["moves"]
+                result.can_move = first_data["can_move"]
+
 
             case ClickResult.SECOND_SELECT:
                 self.first_select = False
 
             case ClickResult.MOVE:
-                data["data"] = self._second_select(board_x=board_x, board_y=board_y)
                 self.first_select = False
+
+                second_data = self._second_select(board_x=board_x, board_y=board_y)
+                result.move_from = second_data["move_from"]
+                result.move_to = second_data["move_to"]
+                result.move_result = second_data["move_result"]
 
             case ClickResult.NOTHING:
                 pass
 
+        if result.type == ClickResult.MOVE and result.move_result == MoveResult.OK:
+            self._after_move()
+        
         if (self.buffer and self.buffer.piece.color == self.has_move):
-            print("Buff work 2")
             current_piece = self.chessboard.get_piece(cord=self.buffer.from_pos)
             if (current_piece is self.buffer.piece):
                 if (self.filter_move(move=self.buffer) == MoveResult.OK):
@@ -87,11 +101,7 @@ class Game:
                     self.buffer = None
                     self._after_move()
 
-
-        if data["type"] == ClickResult.MOVE and data["data"]["move_result"] == MoveResult.OK:
-            self._after_move()
-
-        return data
+        return result
 
     def _update_promotion(self, board_x:int, board_y:int):
         piece: Figure = self.chessboard.get_piece(cord=self.promotion_pos)
@@ -186,7 +196,7 @@ class Game:
         returned_data = {
             "selected_piece": piece,
             "moves": [],
-            "can_move": 1
+            "can_move": True
         }
 
         moves = piece.get_moves(chessboard=self.chessboard)
@@ -200,7 +210,7 @@ class Game:
             returned_data["moves"] = right_moves
 
         if (piece.color != self.has_move):
-            returned_data["can_move"] = 0
+            returned_data["can_move"] = False
 
         return returned_data
 
@@ -245,7 +255,6 @@ class Game:
 
     def clear_available_moves(self):
         self.available_moves = []
-        self.avl_moves = []
 
 
     def _make_move(self, record: MoveRecord):

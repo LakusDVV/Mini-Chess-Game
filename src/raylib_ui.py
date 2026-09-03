@@ -55,40 +55,36 @@ class Game_UI:
             
             if game_data["game_status"] == GameStatus.PLAYING:
 
-                if game_data["data"]["type"] in (ClickResult.SELECT, ClickResult.CHANGE_SELECTION):
-                    self.update_highlighting_first_data(game_data["data"]["data"])
+                if game_data["data"].type in (ClickResult.SELECT, ClickResult.CHANGE_SELECTION):
+                    self.update_highlighting_first_data(game_data["data"])
                     self.clear_render_data_second_click()
                 
-                elif game_data["data"]["type"] == ClickResult.MOVE:
-                    self.update_highlighting_second_data(game_data["data"]["data"])
+                elif game_data["data"].type == ClickResult.MOVE:
+                    self.update_highlighting_second_data(game_data["data"])
                     self.clear_render_data_first_click()
 
             print(self.chess_game.get_game_info())
 
 
-    def update_highlighting_first_data(self, first_data):
-        if first_data:
-            captures = []
-            moves = []
-            for move in first_data["moves"]:
-                if move.special is None:
-                    moves.append(move.to_pos)
-                else:
-                    captures.append(move.to_pos)
-            
-            moves_type = "moves"
-            if first_data["can_move"] == 0:
-                moves_type = "next_moves"
+    def update_highlighting_first_data(self, data):
+        captures = []
+        moves = []
+        for move in data.moves:
+            if move.special is None:
+                moves.append(move.to_pos)
+            else:
+                captures.append(move.to_pos)
+        
+        moves_type = "moves"
+        if not data.can_move:
+            moves_type = "next_moves"
 
-            
-            self.render.set_data_moves(captures=captures, moves=moves, moves_type=moves_type)
-            self.render.set_data_highlight(position=[first_data["selected_piece"].cord], name_highlight="selected")
-            self.cheker = remember_available_moves(moves)
-            self.cheker_on = True
-        else:
-            self.render.clear_highlight_data(name_highlight="howered")
-            self.render.clear_highlight_data(name_highlight="selected")
-            self.cheker_on = False
+        
+        self.render.set_data_moves(captures=captures, moves=moves, moves_type=moves_type)
+        self.render.set_data_highlight(position=[data.selected_piece.cord], name_highlight="selected")
+        self.cheker = remember_available_moves(moves)
+        self.cheker_on = True
+
  
 
     def cheking_cell(self, x, y):
@@ -107,8 +103,8 @@ class Game_UI:
         self.cheker_on = False
 
 
-    def update_highlighting_second_data(self, second_data):
-        self.render.set_data_highlight(position=[second_data["move_from"], second_data["move_to"]], name_highlight="last_move")
+    def update_highlighting_second_data(self, data):
+        self.render.set_data_highlight(position=[data.move_from, data.move_to], name_highlight="last_move")
 
 
     def clear_render_data_second_click(self):
