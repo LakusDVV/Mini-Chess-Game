@@ -14,7 +14,6 @@ class Game:
         self.tile_size = 70
 
         self.chessboard = ChessBoard()
-        self.selected_piece: Figure = Figure()
         self.history: Stak = Stak()
         
         self.available_moves = []
@@ -24,6 +23,7 @@ class Game:
         self.has_move: PieceColor = PieceColor.WHITE        
 
         self.promotion_pos: tuple[int, int] = None
+        self.selected_piece: Figure = Figure()
         self.first_select = False
 
 
@@ -93,19 +93,15 @@ class Game:
         if result.type == ClickResult.MOVE and result.move_result == MoveResult.OK:
             self._after_move()
         
-        if (self.buffer and self.buffer.piece.color == self.has_move):
-            current_piece = self.chessboard.get_piece(cord=self.buffer.from_pos)
-            if (current_piece is self.buffer.piece):
-                if (self.filter_move(move=self.buffer) == MoveResult.OK):
-                    self._make_move(record=self.move_to_move_record(self.buffer))
-                    self.buffer = None
-                    self._after_move()
+        self.update_buffer()
 
         return result
 
     def _update_promotion(self, board_x:int, board_y:int):
         piece: Figure = self.chessboard.get_piece(cord=self.promotion_pos)
-        result = Figure
+        result = UpdateResult()
+        result.type = ClickResult.PROMOTION_SELECT
+        result.move_result = MoveResult.ERROR
 
         x, y = self.promotion_pos
         
@@ -124,8 +120,9 @@ class Game:
             self.chessboard.apply_move(rec)
 
             self._after_move()
+            print(f"promotion sucsess, figure: {fig}")
             self.game_status = GameStatus.PLAYING
-            result = fig
+            result.move_result = MoveResult.OK
 
         return result
 
@@ -234,23 +231,30 @@ class Game:
         if move:
             _, to_y = record.to_pos
 
-            if isinstance(record.piece, Pawn) and to_y == last_line:
-                self.promotion = True
-
-
             if record.piece.color == self.has_move:
+                if isinstance(record.piece, Pawn) and to_y == last_line:
+                    self.game_status = GameStatus.PROMOTION_SELECT
+                    self.promotion_pos = data["move_to"]
                 self._make_move(record=record)
-                data["move_result"] = MoveResult.OK                
+                data["move_result"] = MoveResult.OK
             else:
                 if (not self.buffer): 
                     self.buffer = move
-                    print("Buff work 1")
                 else: self.buffer = None
 
         else:
             data["move_result"] =  MoveResult.ERROR
 
         return data
+
+    def update_buffer(self):
+        if (self.buffer and self.buffer.piece.color == self.has_move):
+            current_piece = self.chessboard.get_piece(cord=self.buffer.from_pos)
+            if (current_piece is self.buffer.piece):
+                if (self.filter_move(move=self.buffer) == MoveResult.OK):
+                    self._make_move(record=self.move_to_move_record(self.buffer))
+                    self.buffer = None
+                    self._after_move()
 
 
     def clear_available_moves(self):
@@ -272,7 +276,7 @@ class Game:
         king_moves = king.get_moves(chessboard=self.chessboard)
         right_moves = self.filter_moves(king_moves)["right_moves"]
 
-        status = GameStatus.PLAYING
+        status = self.game_status
 
         # If king don't have moves
         if not right_moves:
@@ -297,7 +301,6 @@ class Game:
                     status = GameStatus.PAT
 
         return status
-
 
     def find_move_to(self, to_x, to_y) -> Optional[Move]:
         for move in self.available_moves:

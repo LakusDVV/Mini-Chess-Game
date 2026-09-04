@@ -46,6 +46,7 @@ class ClickResult(Enum):
     SECOND_SELECT = auto()
     MOVE = auto()
     CHANGE_SELECTION = auto()
+    PROMOTION_SELECT = auto()
 
 
 class Errors(Enum):

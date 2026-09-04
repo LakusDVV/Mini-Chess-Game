@@ -1,7 +1,7 @@
 import raylibpy as rl
 from src.render import Render, TextureManager
 from src.chess_core.game import Game
-from src.enums import GameStatus, ClickResult
+from src.enums import GameStatus, ClickResult, MoveResult
 
 
 class Game_UI:
@@ -19,10 +19,14 @@ class Game_UI:
 
         self.texture_manager = TextureManager()
         self.texture_manager.load_textures()
+        self.prev_gamestat: GameStatus = None
         self.cheker_on = False
         self.cheker = 0
 
-        self.render = Render(chessboard=self.chess_game.get_chessboard(), texture_manager=self.texture_manager)
+        self.render = Render(
+            chessboard=self.chess_game.get_chessboard(), 
+            texture_manager=self.texture_manager
+            )
 
         self.chess_game.create_figures(texture_manager=self.texture_manager)
 
@@ -62,6 +66,11 @@ class Game_UI:
                 elif game_data["data"].type == ClickResult.MOVE:
                     self.update_highlighting_second_data(game_data["data"])
                     self.clear_render_data_first_click()
+
+
+
+            
+            self.prev_gamestat = game_data["game_status"]
 
             print(self.chess_game.get_game_info())
 

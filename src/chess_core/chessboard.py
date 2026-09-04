@@ -85,14 +85,6 @@ class ChessBoard:
             self._board[to_y][to_x] = move.promotion_pawn
 
 
-        elif isinstance(move.piece, Pawn) and to_y == last_line:
-            self._board[to_y][to_x] = 0
-
-
-
-
-
-
     def undo(self, move: MoveRecord):
         # Correct work when
         # promotion +
