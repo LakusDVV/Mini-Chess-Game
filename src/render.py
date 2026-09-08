@@ -185,7 +185,7 @@ class Render:
         if self.promotion_pawn_data["has_data"]:
             data = self.promotion_pawn_data["data"]
             pawn_x, pawn_y = data["cord"]
-            figure_order = ["queen", "knight", "bishop", "rook"]
+            figure_order = ["queen", "knight", "rook", "bishop"]
 
             conf = {
                 pawn_y - data["direction"]  * (i): figure_order[i]
