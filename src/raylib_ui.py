@@ -67,9 +67,18 @@ class Game_UI:
                     self.update_highlighting_second_data(game_data["data"])
                     self.clear_render_data_first_click()
 
+            if game_data["game_status"] == GameStatus.PROMOTION_SELECT:
+                selected_piece = game_data["data"].selected_piece
+                
+                self.render.set_promotion_data(selected_piece.cord, selected_piece.color, selected_piece.direction)
 
+            if game_data["game_status"] == GameStatus.PLAYING and self.prev_gamestat == GameStatus.PROMOTION_SELECT:
+                promotion_figure = game_data["data"].promotion_figure
+                x, y = promotion_figure.cord
+                texture = self.texture_manager.get_texture(f"{promotion_figure.color}_{promotion_figure.texture_key}")
+                self.chess_game.get_chessboard().set_piece_texture(cord=(x, y), texture=texture)
+                self.render.clear_promotion_data()
 
-            
             self.prev_gamestat = game_data["game_status"]
 
             print(self.chess_game.get_game_info())

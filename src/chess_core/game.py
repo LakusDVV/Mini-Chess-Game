@@ -83,6 +83,7 @@ class Game:
                 self.first_select = False
 
                 second_data = self._second_select(board_x=board_x, board_y=board_y)
+                result.selected_piece = self.selected_piece
                 result.move_from = second_data["move_from"]
                 result.move_to = second_data["move_to"]
                 result.move_result = second_data["move_result"]
@@ -102,6 +103,7 @@ class Game:
         result = UpdateResult()
         result.type = ClickResult.PROMOTION_SELECT
         result.move_result = MoveResult.ERROR
+        result.selected_piece = self.chessboard.get_piece(cord=self.promotion_pos)
 
         x, y = self.promotion_pos
         
@@ -119,8 +121,8 @@ class Game:
             rec.promotion_pawn = fig(x=x, y=y, color=piece.color)
             self.chessboard.apply_move(rec)
 
-            self._after_move()
             print(f"promotion sucsess, figure: {fig}")
+            result.promotion_figure = rec.promotion_pawn
             self.game_status = GameStatus.PLAYING
             result.move_result = MoveResult.OK
 

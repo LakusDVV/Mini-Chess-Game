@@ -126,7 +126,7 @@ class Render:
         self.draw_move_indecators()
 
         # Promotion
-        # self.draw_promotion_menu()
+        self.draw_promotion_menu()
                 
         rl.end_drawing()
 
@@ -138,15 +138,17 @@ class Render:
 
         for y in range(self.cols):
             for x in range(self.rows):
-                color = self.get_tile_color(x, y)
-                rl.draw_rectangle(
-                    pos_x= x * self.tile_size,
-                    pos_y= y * self.tile_size,
-                    width= self.tile_size,
-                    height= self.tile_size,
-                    color= color
-                )
-
+                self.draw_rectangle(x, y)
+                
+    def draw_rectangle(self, x, y):
+        color = self.get_tile_color(x, y)
+        rl.draw_rectangle(
+            pos_x= x * self.tile_size,
+            pos_y= y * self.tile_size,
+            width= self.tile_size,
+            height= self.tile_size,
+            color= color
+        )
 
     def get_tile_color(self, x: int, y: int) -> rl.Color:
         """
@@ -178,6 +180,23 @@ class Render:
             for x, y in highlight.captures:
                 if not highlight_hower.position == [(x, y)]:
                     self.draw_texture_at(x=x, y=y, texture_name=highlight.texture_name)
+
+    def draw_promotion_menu(self):
+        if self.promotion_pawn_data["has_data"]:
+            data = self.promotion_pawn_data["data"]
+            pawn_x, pawn_y = data["cord"]
+            figure_order = ["queen", "knight", "bishop", "rook"]
+
+            conf = {
+                pawn_y - data["direction"]  * (i): figure_order[i]
+                for i in range(4)
+            }
+
+            
+            for ty, fig in conf.items():
+                self.draw_rectangle(pawn_x, ty)
+                self.draw_texture_at(pawn_x, ty, f"{data["color"]}_{fig}")
+
 
 
     def draw_circle_at(self, x:int, y:int, color: rl.Color):
@@ -227,3 +246,16 @@ class Render:
 
     def clear_highlight_data(self, *, name_highlight) -> None:
         self._highlights[name_highlight].clear()
+
+    def set_promotion_data(self, cord: tuple[int, int], color: PieceColor, direction: int):
+        self.promotion_pawn_data["has_data"] = True
+        self.promotion_pawn_data["data"] = {
+                "color": color,
+                "direction": direction, # -1 or 1
+                "cord": cord # (x, y)
+            }
+
+    def clear_promotion_data(self):
+        self.promotion_pawn_data["has_data"] = False
+
+    

@@ -64,6 +64,7 @@ class UpdateResult:
     can_move: bool = True
     move_from: tuple = (0, 0)
     move_to: tuple = (0, 0)
+    promotion_figure: Optional["Figure"] = None
     move_result: MoveResult = MoveResult.NOTHING
 
 

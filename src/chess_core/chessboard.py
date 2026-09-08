@@ -169,6 +169,12 @@ class ChessBoard:
         return self._board[y][x]
 
 
+    def set_piece_texture(self, *, cord: tuple[int, int], texture) -> None:
+        piece = self.get_piece(cord=cord)
+        piece.texture = texture
+        piece.renderer.texture = texture
+
+
     def is_empty(self, x: int, y: int) -> bool:
         piece = self._board[y][x]
         return piece == 0
